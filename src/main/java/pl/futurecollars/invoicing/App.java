@@ -26,13 +26,14 @@ public class App {
 
     List<InvoiceEntry> products = List.of(new InvoiceEntry("Programming course", BigDecimal.valueOf(10000), BigDecimal.valueOf(2300), Vat.VAT_23));
 
-    int id = service.save(new Invoice(LocalDate.now(), buyer, seller, products));
+    Invoice invoice = new Invoice(LocalDate.now(), buyer, seller, products);
+
+    int id = service.save(invoice);
 
     service.getById(id).ifPresent(System.out::println);
 
     System.out.println(service.getAll());
 
     service.delete(id);
-
   }
 }
