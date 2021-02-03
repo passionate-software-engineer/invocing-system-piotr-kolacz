@@ -7,18 +7,18 @@ import java.util.Objects;
 
 public class Invoice {
 
-  private final int id;
+  private int id;
   private LocalDate date;
   private Company buyer;
   private Company seller;
   private List<InvoiceEntry> entries;
 
-  public Invoice(int id) {
-    this.id = id;
-  }
-
   public int getId() {
     return id;
+  }
+
+  public void setId(int id) {
+    this.id = id;
   }
 
   public LocalDate getDate() {
