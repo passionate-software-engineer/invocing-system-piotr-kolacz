@@ -11,6 +11,6 @@
         <module name="invocing-system-piotr-kolacz.test" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="15" />
+    <bytecodeTargetLevel target="14" />
   </component>
 </project>
