@@ -22,7 +22,7 @@ public class FileBasedDatabase implements Database {
   @Override
   public int save(Invoice invoice) {
     try {
-      invoice.setId(idService.getNextIdAndIncreament());
+      invoice.setId(idService.getNextIdAndIncrement());
       filesService.appendLineToFile(databasePath, jsonService.toJson(invoice));
 
       return invoice.getId();
