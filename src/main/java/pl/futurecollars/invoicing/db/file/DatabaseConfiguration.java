@@ -13,15 +13,15 @@ import pl.futurecollars.invoicing.utils.JsonService;
 public class DatabaseConfiguration {
 
   @Bean
-  public IdService idService(FilesService filesService) throws IOException {
+  public IdProvider idService(FilesService filesService) throws IOException {
     Path idFilePath = Files.createTempFile("db", "id.txt");
-    return new IdService(idFilePath, filesService);
+    return new IdProvider(idFilePath, filesService);
   }
 
   @Bean
-  public Database fileBasedDatabase(IdService idService, FilesService filesService, JsonService jsonService) throws IOException {
+  public Database fileBasedDatabase(IdProvider idProvider, FilesService filesService, JsonService jsonService) throws IOException {
     Path databaseFilePath = Files.createTempFile("db", "invoices.txt");
-    return new FileBasedDatabase(databaseFilePath, idService, filesService, jsonService);
+    return new FileBasedDatabase(databaseFilePath, idProvider, filesService, jsonService);
   }
 
 }
