@@ -12,15 +12,19 @@ import pl.futurecollars.invoicing.utils.JsonService;
 @Configuration
 public class DatabaseConfiguration {
 
+  private static final String DATABASE_LOCATION = "db";
+  private static final String ID_FILE_NAME = "id.txt";
+  private static final String INVOICES_FILE_NAME = "invoices.txt";
+
   @Bean
-  public IdProvider idService(FilesService filesService) throws IOException {
-    Path idFilePath = Files.createTempFile("db", "id.txt");
+  public IdProvider idProvider(FilesService filesService) throws IOException {
+    Path idFilePath = Files.createTempFile(DATABASE_LOCATION, ID_FILE_NAME);
     return new IdProvider(idFilePath, filesService);
   }
 
   @Bean
   public Database fileBasedDatabase(IdProvider idProvider, FilesService filesService, JsonService jsonService) throws IOException {
-    Path databaseFilePath = Files.createTempFile("db", "invoices.txt");
+    Path databaseFilePath = Files.createTempFile(DATABASE_LOCATION, INVOICES_FILE_NAME);
     return new FileBasedDatabase(databaseFilePath, idProvider, filesService, jsonService);
   }
 
