@@ -26,7 +26,7 @@ class InvoiceControllerIntegrationTest extends Specification {
     private MockMvc mockMvc
 
     @Autowired
-    private JsonService jsonService;
+    private JsonService jsonService
 
     def setup() {
         getAllInvoices().each { invoice -> deleteInvoice(invoice.id) }
