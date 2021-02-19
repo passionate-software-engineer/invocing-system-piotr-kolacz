@@ -1,8 +1,7 @@
 name: CI
 
-# Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
+  # Triggers the workflow on push events to task_ branch
   push:
     branches: [ task_* ]
 
@@ -15,9 +14,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-#       - name: Set up JDK 14
-#         uses: actions/setup-java@v1
-#         with:
-#           java-version: 14 # TODO Jacoco does not support Java 15 yet, upgrade to 15 when Jacoco 0.8.7 is released
       - name: Build with Gradle
         run: ./gradlew build
