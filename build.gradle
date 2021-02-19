@@ -85,6 +85,13 @@ jacocoTestCoverageVerification {
     }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(15)
+        vendor = JvmVendorSpec.ADOPTOPENJDK
+    }
+}
+
 test {
     finalizedBy jacocoTestReport
 }
@@ -100,8 +107,6 @@ jacocoTestReport {
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:all" << "-Xlint:-processing" << "-Werror"
 }
-
-sourceCompatibility = 1.14
 
 checkstyle {
     showViolations = true
