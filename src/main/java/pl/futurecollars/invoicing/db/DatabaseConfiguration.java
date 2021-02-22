@@ -3,6 +3,7 @@ package pl.futurecollars.invoicing.db;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,10 +16,9 @@ import pl.futurecollars.invoicing.db.memory.InMemoryDatabase;
 import pl.futurecollars.invoicing.utils.FilesService;
 import pl.futurecollars.invoicing.utils.JsonService;
 
+@Slf4j
 @Configuration
 public class DatabaseConfiguration {
-
-  private final Logger logger = LoggerFactory.getLogger(DatabaseConfiguration.class);
 
   @Bean
   public IdProvider idProvider(
@@ -39,6 +39,7 @@ public class DatabaseConfiguration {
       @Value("${invoicing-system.database.directory}") String databaseDirectory,
       @Value("${invoicing-system.database.invoices.file}") String invoicesFile
   ) throws IOException {
+    log.debug("Creating in-file database");
     Path databaseFilePath = Files.createTempFile(databaseDirectory, invoicesFile);
     return new FileBasedDatabase(databaseFilePath, idProvider, filesService, jsonService);
   }
@@ -46,7 +47,7 @@ public class DatabaseConfiguration {
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "memory")
   @Bean
   public Database inMemoryDatabase() {
-    logger.debug("Creating in-memory database");
+    log.debug("Creating in-memory database");
     return new InMemoryDatabase();
   }
 
