@@ -27,7 +27,7 @@ public class TaxCalculatorService {
   }
 
   public BigDecimal outgoingVat(String taxIdentificationNumber) {
-    return database.visit(sellerPredicate(taxIdentificationNumber), InvoiceEntry::getVatValue);
+    return database.visit(buyerPredicate(taxIdentificationNumber), InvoiceEntry::getVatValue);
   }
 
   private Predicate<Invoice> sellerPredicate(String taxIdentificationNumber) {
