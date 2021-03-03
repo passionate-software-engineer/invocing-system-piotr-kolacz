@@ -1,6 +1,7 @@
 package pl.futurecollars.invoicing.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 import java.util.function.Predicate;
 import lombok.AllArgsConstructor;
@@ -35,8 +36,9 @@ public class TaxCalculatorService {
   private BigDecimal getVatValueTakingIntoConsiderationPersonalCarUsage(InvoiceEntry invoiceEntry) {
     return Optional.ofNullable(invoiceEntry.getExpenseRelatedToCar())
         .map(Car::isPersonalUse)
-        .map(personalCarUsage -> personalCarUsage ? BigDecimal.valueOf(0.5) : BigDecimal.ONE)
-        .map(proportion -> invoiceEntry.getVatValue().multiply(proportion)) // TODO [PK] take care about rounding
+        .map(personalCarUsage -> personalCarUsage ? BigDecimal.valueOf(5, 1) : BigDecimal.ONE)
+        .map(proportion -> invoiceEntry.getVatValue().multiply(proportion))
+        .map(value -> value.setScale(2, RoundingMode.FLOOR))
         .orElse(invoiceEntry.getVatValue());
   }
 

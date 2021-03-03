@@ -1,5 +1,6 @@
-package pl.futurecollars.invoicing.controller
+package pl.futurecollars.invoicing.controller.tax
 
+import pl.futurecollars.invoicing.controller.AbstractControllerTest
 import pl.futurecollars.invoicing.model.Car
 import pl.futurecollars.invoicing.model.Invoice
 import pl.futurecollars.invoicing.model.InvoiceEntry
@@ -100,7 +101,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
                 .buyer(company(2))
                 .entries(List.of(
                         InvoiceEntry.builder()
-                                .vatValue(BigDecimal.valueOf(23))
+                                .vatValue(BigDecimal.valueOf(23.45))
                                 .netPrice(BigDecimal.valueOf(100))
                                 .expenseRelatedToCar(
                                         Car.builder()
@@ -120,20 +121,20 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.income == 100
         taxCalculatorResponse.costs == 0
         taxCalculatorResponse.earnings == 100
-        taxCalculatorResponse.collectedVat == 23
+        taxCalculatorResponse.collectedVat == 23.45
         taxCalculatorResponse.paidVat == 0
-        taxCalculatorResponse.vatToReturn == 23
+        taxCalculatorResponse.vatToReturn == 23.45
 
         when:
         taxCalculatorResponse = calculateTax(invoice.getBuyer().getTaxIdentificationNumber())
 
         then: "proportion applied - it applies when you are the buyer"
         taxCalculatorResponse.income == 0
-        taxCalculatorResponse.costs == 111.5
-        taxCalculatorResponse.earnings == -111.5
+        taxCalculatorResponse.costs == 111.73
+        taxCalculatorResponse.earnings == -111.73
         taxCalculatorResponse.collectedVat == 0
-        taxCalculatorResponse.paidVat == 11.5
-        taxCalculatorResponse.vatToReturn == -11.5
+        taxCalculatorResponse.paidVat == 11.72
+        taxCalculatorResponse.vatToReturn == -11.72
     }
 
 }
