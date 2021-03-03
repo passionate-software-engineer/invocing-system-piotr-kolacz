@@ -38,6 +38,17 @@ public class TaxCalculatorService {
     return incomingVat(taxIdentificationNumber).subtract(outgoingVat(taxIdentificationNumber));
   }
 
+  public TaxCalculatorResult calculateTaxes(String taxIdentificationNumber) {
+    return TaxCalculatorResult.builder()
+        .income(income(taxIdentificationNumber))
+        .costs(costs(taxIdentificationNumber))
+        .earnings(getEarnings(taxIdentificationNumber))
+        .incomingVat(incomingVat(taxIdentificationNumber))
+        .outgoingVat(outgoingVat(taxIdentificationNumber))
+        .vatToReturn(getVatToReturn(taxIdentificationNumber))
+        .build();
+  }
+
   private Predicate<Invoice> sellerPredicate(String taxIdentificationNumber) {
     return invoice -> taxIdentificationNumber.equals(invoice.getSeller().getTaxIdentificationNumber());
   }

@@ -1,4 +1,4 @@
-package pl.futurecollars.invoicing.controller.tax;
+package pl.futurecollars.invoicing.service;
 
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 @Data
-public class TaxCalculatorResponse {
+public class TaxCalculatorResult {
 
   private final BigDecimal income;
   private final BigDecimal costs;
