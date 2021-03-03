@@ -2,7 +2,6 @@ package pl.futurecollars.invoicing.model;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.math.BigDecimal;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,9 +21,6 @@ public class Company {
 
   @ApiModelProperty(value = "Company name", required = true, example = "Invoice House Ltd.")
   private String name;
-
-  @ApiModelProperty(value = "Company cars")
-  private List<Car> cars;
 
   @ApiModelProperty(value = "Pension insurance amount", required = true, example = "1328.75")
   private BigDecimal pensionInsurance;

@@ -1,6 +1,11 @@
 package pl.futurecollars.invoicing.controller
 
+import pl.futurecollars.invoicing.model.Car
+import pl.futurecollars.invoicing.model.Invoice
+import pl.futurecollars.invoicing.model.InvoiceEntry
 import spock.lang.Unroll
+
+import static pl.futurecollars.invoicing.helpers.TestHelpers.company
 
 @Unroll
 class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
@@ -13,8 +18,8 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.income == 0
         taxCalculatorResponse.costs == 0
         taxCalculatorResponse.earnings == 0
-        taxCalculatorResponse.incomingVat == 0
-        taxCalculatorResponse.outgoingVat == 0
+        taxCalculatorResponse.collectedVat == 0
+        taxCalculatorResponse.paidVat == 0
         taxCalculatorResponse.vatToReturn == 0
     }
 
@@ -29,8 +34,8 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.income == 0
         taxCalculatorResponse.costs == 0
         taxCalculatorResponse.earnings == 0
-        taxCalculatorResponse.incomingVat == 0
-        taxCalculatorResponse.outgoingVat == 0
+        taxCalculatorResponse.collectedVat == 0
+        taxCalculatorResponse.paidVat == 0
         taxCalculatorResponse.vatToReturn == 0
     }
 
@@ -45,8 +50,8 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.income == 15000
         taxCalculatorResponse.costs == 0
         taxCalculatorResponse.earnings == 15000
-        taxCalculatorResponse.incomingVat == 1200.0
-        taxCalculatorResponse.outgoingVat == 0
+        taxCalculatorResponse.collectedVat == 1200.0
+        taxCalculatorResponse.paidVat == 0
         taxCalculatorResponse.vatToReturn == 1200.0
 
         when:
@@ -56,8 +61,8 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.income == 55000
         taxCalculatorResponse.costs == 0
         taxCalculatorResponse.earnings == 55000
-        taxCalculatorResponse.incomingVat == 4400.0
-        taxCalculatorResponse.outgoingVat == 0
+        taxCalculatorResponse.collectedVat == 4400.0
+        taxCalculatorResponse.paidVat == 0
         taxCalculatorResponse.vatToReturn == 4400.0
 
         when:
@@ -67,8 +72,8 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.income == 0
         taxCalculatorResponse.costs == 15000
         taxCalculatorResponse.earnings == -15000
-        taxCalculatorResponse.incomingVat == 0
-        taxCalculatorResponse.outgoingVat == 1200.0
+        taxCalculatorResponse.collectedVat == 0
+        taxCalculatorResponse.paidVat == 1200.0
         taxCalculatorResponse.vatToReturn == -1200.0
     }
 
@@ -83,9 +88,52 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.income == 78000
         taxCalculatorResponse.costs == 3000
         taxCalculatorResponse.earnings == 75000
-        taxCalculatorResponse.incomingVat == 6240.0
-        taxCalculatorResponse.outgoingVat == 240.0
+        taxCalculatorResponse.collectedVat == 6240.0
+        taxCalculatorResponse.paidVat == 240.0
         taxCalculatorResponse.vatToReturn == 6000.0
+    }
+
+    def "tax is calculated correctly when car is used for personal purposes"() {
+        given:
+        def invoice = Invoice.builder()
+                .seller(company(1))
+                .buyer(company(2))
+                .entries(List.of(
+                        InvoiceEntry.builder()
+                                .vatValue(BigDecimal.valueOf(23))
+                                .netPrice(BigDecimal.valueOf(100))
+                                .expenseRelatedToCar(
+                                        Car.builder()
+                                                .personalUse(true)
+                                                .build()
+                                )
+                                .build()
+                ))
+                .build()
+
+        addInvoiceAndReturnId(invoice)
+
+        when:
+        def taxCalculatorResponse = calculateTax(invoice.getSeller().getTaxIdentificationNumber())
+
+        then: "no proportion - it applies only when you are the buyer"
+        taxCalculatorResponse.income == 100
+        taxCalculatorResponse.costs == 0
+        taxCalculatorResponse.earnings == 100
+        taxCalculatorResponse.collectedVat == 23
+        taxCalculatorResponse.paidVat == 0
+        taxCalculatorResponse.vatToReturn == 23
+
+        when:
+        taxCalculatorResponse = calculateTax(invoice.getBuyer().getTaxIdentificationNumber())
+
+        then: "proportion applied - it applies when you are the buyer"
+        taxCalculatorResponse.income == 0
+        taxCalculatorResponse.costs == 111.5
+        taxCalculatorResponse.earnings == -111.5
+        taxCalculatorResponse.collectedVat == 0
+        taxCalculatorResponse.paidVat == 11.5
+        taxCalculatorResponse.vatToReturn == -11.5
     }
 
 }
