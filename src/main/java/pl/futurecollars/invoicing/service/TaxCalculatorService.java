@@ -30,6 +30,14 @@ public class TaxCalculatorService {
     return database.visit(buyerPredicate(taxIdentificationNumber), InvoiceEntry::getVatValue);
   }
 
+  public BigDecimal getEarnings(String taxIdentificationNumber) {
+    return income(taxIdentificationNumber).subtract(costs(taxIdentificationNumber));
+  }
+
+  public BigDecimal getVatToReturn(String taxIdentificationNumber) {
+    return incomingVat(taxIdentificationNumber).subtract(outgoingVat(taxIdentificationNumber));
+  }
+
   private Predicate<Invoice> sellerPredicate(String taxIdentificationNumber) {
     return invoice -> taxIdentificationNumber.equals(invoice.getSeller().getTaxIdentificationNumber());
   }

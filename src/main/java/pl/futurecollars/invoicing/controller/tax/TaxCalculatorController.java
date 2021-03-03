@@ -15,10 +15,10 @@ public class TaxCalculatorController implements TaxCalculatorApi {
     return TaxCalculatorResponse.builder()
         .income(taxService.income(taxIdentificationNumber))
         .costs(taxService.costs(taxIdentificationNumber))
-        .earnings(taxService.income(taxIdentificationNumber).subtract(taxService.costs(taxIdentificationNumber)))
+        .earnings(taxService.getEarnings(taxIdentificationNumber))
         .incomingVat(taxService.incomingVat(taxIdentificationNumber))
         .outgoingVat(taxService.outgoingVat(taxIdentificationNumber))
-        .vatToReturn(taxService.incomingVat(taxIdentificationNumber).subtract(taxService.outgoingVat(taxIdentificationNumber)))
+        .vatToReturn(taxService.getVatToReturn(taxIdentificationNumber))
         .build();
   }
 }
