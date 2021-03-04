@@ -22,10 +22,12 @@ public class Company {
   @ApiModelProperty(value = "Company name", required = true, example = "Invoice House Ltd.")
   private String name;
 
+  @Builder.Default
   @ApiModelProperty(value = "Pension insurance amount", required = true, example = "1328.75")
-  private BigDecimal pensionInsurance;
+  private BigDecimal pensionInsurance = BigDecimal.ZERO;
 
+  @Builder.Default
   @ApiModelProperty(value = "Health insurance amount", required = true, example = "458.34")
-  private BigDecimal healthInsurance;
+  private BigDecimal healthInsurance = BigDecimal.ZERO;
 
 }

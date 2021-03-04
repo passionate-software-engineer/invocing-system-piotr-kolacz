@@ -15,6 +15,6 @@ public class TaxCalculatorController implements TaxCalculatorApi {
 
   @Override
   public TaxCalculatorResult calculateTaxes(@RequestBody Company company) {
-    return taxService.calculateTaxes(company.getTaxIdentificationNumber());
+    return taxService.calculateTaxes(company);
   }
 }

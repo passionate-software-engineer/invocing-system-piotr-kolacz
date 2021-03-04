@@ -18,7 +18,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         then:
         taxCalculatorResponse.income == 0
         taxCalculatorResponse.costs == 0
-        taxCalculatorResponse.earnings == 0
+        taxCalculatorResponse.incomeMinusCosts == 0
         taxCalculatorResponse.collectedVat == 0
         taxCalculatorResponse.paidVat == 0
         taxCalculatorResponse.vatToReturn == 0
@@ -34,7 +34,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         then:
         taxCalculatorResponse.income == 0
         taxCalculatorResponse.costs == 0
-        taxCalculatorResponse.earnings == 0
+        taxCalculatorResponse.incomeMinusCosts == 0
         taxCalculatorResponse.collectedVat == 0
         taxCalculatorResponse.paidVat == 0
         taxCalculatorResponse.vatToReturn == 0
@@ -50,7 +50,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         then:
         taxCalculatorResponse.income == 15000
         taxCalculatorResponse.costs == 0
-        taxCalculatorResponse.earnings == 15000
+        taxCalculatorResponse.incomeMinusCosts == 15000
         taxCalculatorResponse.collectedVat == 1200.0
         taxCalculatorResponse.paidVat == 0
         taxCalculatorResponse.vatToReturn == 1200.0
@@ -61,7 +61,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         then:
         taxCalculatorResponse.income == 55000
         taxCalculatorResponse.costs == 0
-        taxCalculatorResponse.earnings == 55000
+        taxCalculatorResponse.incomeMinusCosts == 55000
         taxCalculatorResponse.collectedVat == 4400.0
         taxCalculatorResponse.paidVat == 0
         taxCalculatorResponse.vatToReturn == 4400.0
@@ -72,7 +72,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         then:
         taxCalculatorResponse.income == 0
         taxCalculatorResponse.costs == 15000
-        taxCalculatorResponse.earnings == -15000
+        taxCalculatorResponse.incomeMinusCosts == -15000
         taxCalculatorResponse.collectedVat == 0
         taxCalculatorResponse.paidVat == 1200.0
         taxCalculatorResponse.vatToReturn == -1200.0
@@ -88,7 +88,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         then:
         taxCalculatorResponse.income == 78000
         taxCalculatorResponse.costs == 3000
-        taxCalculatorResponse.earnings == 75000
+        taxCalculatorResponse.incomeMinusCosts == 75000
         taxCalculatorResponse.collectedVat == 6240.0
         taxCalculatorResponse.paidVat == 240.0
         taxCalculatorResponse.vatToReturn == 6000.0
@@ -120,7 +120,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         then: "no proportion - it applies only when you are the buyer"
         taxCalculatorResponse.income == 100
         taxCalculatorResponse.costs == 0
-        taxCalculatorResponse.earnings == 100
+        taxCalculatorResponse.incomeMinusCosts == 100
         taxCalculatorResponse.collectedVat == 23.45
         taxCalculatorResponse.paidVat == 0
         taxCalculatorResponse.vatToReturn == 23.45
@@ -131,7 +131,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         then: "proportion applied - it applies when you are the buyer"
         taxCalculatorResponse.income == 0
         taxCalculatorResponse.costs == 111.73
-        taxCalculatorResponse.earnings == -111.73
+        taxCalculatorResponse.incomeMinusCosts == -111.73
         taxCalculatorResponse.collectedVat == 0
         taxCalculatorResponse.paidVat == 11.72
         taxCalculatorResponse.vatToReturn == -11.72

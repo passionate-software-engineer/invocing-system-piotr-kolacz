@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.futurecollars.invoicing.db.Database;
 import pl.futurecollars.invoicing.model.Car;
+import pl.futurecollars.invoicing.model.Company;
 import pl.futurecollars.invoicing.model.Invoice;
 import pl.futurecollars.invoicing.model.InvoiceEntry;
 
@@ -58,11 +59,31 @@ public class TaxCalculatorService {
     return collectedVat(taxIdentificationNumber).subtract(paidVat(taxIdentificationNumber));
   }
 
-  public TaxCalculatorResult calculateTaxes(String taxIdentificationNumber) {
+  public TaxCalculatorResult calculateTaxes(Company company) {
+    String taxIdentificationNumber = company.getTaxIdentificationNumber();
+
+    BigDecimal incomeMinusCosts = getEarnings(taxIdentificationNumber);
+    BigDecimal incomeMinusCostsMinusPensionInsurance = incomeMinusCosts.subtract(company.getPensionInsurance());
+    BigDecimal incomeMinusCostsMinusPensionInsuranceRounded = incomeMinusCostsMinusPensionInsurance.setScale(0, RoundingMode.HALF_DOWN);
+    BigDecimal incomeTax = incomeMinusCostsMinusPensionInsuranceRounded.multiply(BigDecimal.valueOf(19, 2));
+    BigDecimal healthInsuranceToSubtract =
+        company.getHealthInsurance().multiply(BigDecimal.valueOf(775, 2).divide(BigDecimal.valueOf(9), RoundingMode.HALF_DOWN));
+
+    BigDecimal incomeTaxMinusHealthInsurance = incomeTax.subtract(healthInsuranceToSubtract);
     return TaxCalculatorResult.builder()
         .income(income(taxIdentificationNumber))
         .costs(costs(taxIdentificationNumber))
-        .earnings(getEarnings(taxIdentificationNumber))
+        .incomeMinusCosts(incomeMinusCosts)
+        .pensionInsurance(company.getPensionInsurance())
+        .incomeMinusCostsMinusPensionInsurance(incomeMinusCostsMinusPensionInsurance)
+        .incomeMinusCostsMinusPensionInsuranceRounded(incomeMinusCostsMinusPensionInsuranceRounded)
+        .incomeTax(incomeTax)
+        .healthInsurancePaid(company.getHealthInsurance())
+        .healthInsuranceToSubtract(healthInsuranceToSubtract)
+        .incomeTaxMinusHealthInsurance(incomeTaxMinusHealthInsurance)
+        .finalIncomeTax(incomeTaxMinusHealthInsurance.setScale(0, RoundingMode.DOWN))
+
+        // vat
         .collectedVat(collectedVat(taxIdentificationNumber))
         .paidVat(paidVat(taxIdentificationNumber))
         .vatToReturn(getVatToReturn(taxIdentificationNumber))
