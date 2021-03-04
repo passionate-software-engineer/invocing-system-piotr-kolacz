@@ -2,6 +2,7 @@ package pl.futurecollars.invoicing.controller.tax
 
 import pl.futurecollars.invoicing.controller.AbstractControllerTest
 import pl.futurecollars.invoicing.model.Car
+import pl.futurecollars.invoicing.model.Company
 import pl.futurecollars.invoicing.model.Invoice
 import pl.futurecollars.invoicing.model.InvoiceEntry
 import spock.lang.Unroll
@@ -13,7 +14,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
 
     def "zeros are returned when there are no invoices in the system"() {
         when:
-        def taxCalculatorResponse = calculateTax("0")
+        def taxCalculatorResponse = calculateTax(company(0))
 
         then:
         taxCalculatorResponse.income == 0
@@ -29,7 +30,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         addUniqueInvoices(10)
 
         when:
-        def taxCalculatorResponse = calculateTax("no_match")
+        def taxCalculatorResponse = calculateTax(company(-14))
 
         then:
         taxCalculatorResponse.income == 0
@@ -45,7 +46,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         addUniqueInvoices(10)
 
         when:
-        def taxCalculatorResponse = calculateTax("5")
+        def taxCalculatorResponse = calculateTax(company(5))
 
         then:
         taxCalculatorResponse.income == 15000
@@ -56,7 +57,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.vatToReturn == 1200.0
 
         when:
-        taxCalculatorResponse = calculateTax("10")
+        taxCalculatorResponse = calculateTax(company(10))
 
         then:
         taxCalculatorResponse.income == 55000
@@ -67,7 +68,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.vatToReturn == 4400.0
 
         when:
-        taxCalculatorResponse = calculateTax("15")
+        taxCalculatorResponse = calculateTax(company(15))
 
         then:
         taxCalculatorResponse.income == 0
@@ -83,7 +84,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         addUniqueInvoices(15) // sellers: 1-15, buyers: 10-25, 10-15 overlapping
 
         when:
-        def taxCalculatorResponse = calculateTax("12")
+        def taxCalculatorResponse = calculateTax(company(12))
 
         then:
         taxCalculatorResponse.income == 78000
@@ -115,7 +116,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         addInvoiceAndReturnId(invoice)
 
         when:
-        def taxCalculatorResponse = calculateTax(invoice.getSeller().getTaxIdentificationNumber())
+        def taxCalculatorResponse = calculateTax(invoice.getSeller())
 
         then: "no proportion - it applies only when you are the buyer"
         taxCalculatorResponse.income == 100
@@ -126,7 +127,7 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.vatToReturn == 23.45
 
         when:
-        taxCalculatorResponse = calculateTax(invoice.getBuyer().getTaxIdentificationNumber())
+        taxCalculatorResponse = calculateTax(invoice.getBuyer())
 
         then: "proportion applied - it applies when you are the buyer"
         taxCalculatorResponse.income == 0
@@ -135,6 +136,60 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         taxCalculatorResponse.collectedVat == 0
         taxCalculatorResponse.paidVat == 11.72
         taxCalculatorResponse.vatToReturn == -11.72
+    }
+
+    def "All calculations are executed correctly"() {
+        given:
+        def ourCompany = Company.builder()
+                .taxIdentificationNumber("1234")
+                .pensionInsurance(514.57)
+                .healthInsurance(319.94)
+                .build()
+
+        def invoiceWithIncome = Invoice.builder()
+                .seller(ourCompany)
+                .buyer(company(2))
+                .entries(List.of(
+                        InvoiceEntry.builder()
+                                .netPrice(76011.62)
+                                .build()
+                ))
+                .build()
+
+        def invoiceWithCosts = Invoice.builder()
+                .seller(company(4))
+                .buyer(ourCompany)
+                .entries(List.of(
+                        InvoiceEntry.builder()
+                                .netPrice(11329.47)
+                                .build()
+                ))
+                .build()
+
+        addInvoiceAndReturnId(invoiceWithIncome)
+        addInvoiceAndReturnId(invoiceWithCosts)
+
+        when:
+        def taxCalculatorResponse = calculateTax(ourCompany)
+
+        then:
+        with(taxCalculatorResponse) {
+            income == 76011.62
+            costs == 11329.47
+            incomeMinusCosts == 64682.15
+            pensionInsurance == 514.57
+            incomeMinusCostsMinusPensionInsurance == 64167.58
+            incomeMinusCostsMinusPensionInsuranceRounded == 64168
+            incomeTax == 12191.92
+            healthInsurancePaid == 319.94
+            healthInsuranceToSubtract == 275.50
+            incomeTaxMinusHealthInsurance == 11916.42
+            finalIncomeTax == 11916
+
+            collectedVat == 0
+            paidVat == 0
+            vatToReturn == 0
+        }
     }
 
 }

@@ -67,9 +67,9 @@ public class TaxCalculatorService {
     BigDecimal incomeMinusCostsMinusPensionInsuranceRounded = incomeMinusCostsMinusPensionInsurance.setScale(0, RoundingMode.HALF_DOWN);
     BigDecimal incomeTax = incomeMinusCostsMinusPensionInsuranceRounded.multiply(BigDecimal.valueOf(19, 2));
     BigDecimal healthInsuranceToSubtract =
-        company.getHealthInsurance().multiply(BigDecimal.valueOf(775, 2).divide(BigDecimal.valueOf(9), RoundingMode.HALF_DOWN));
-
+        company.getHealthInsurance().multiply(BigDecimal.valueOf(775)).divide(BigDecimal.valueOf(900), RoundingMode.HALF_UP);
     BigDecimal incomeTaxMinusHealthInsurance = incomeTax.subtract(healthInsuranceToSubtract);
+
     return TaxCalculatorResult.builder()
         .income(income(taxIdentificationNumber))
         .costs(costs(taxIdentificationNumber))

@@ -5,9 +5,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
-import pl.futurecollars.invoicing.service.TaxCalculatorResult
 import pl.futurecollars.invoicing.model.Company
 import pl.futurecollars.invoicing.model.Invoice
+import pl.futurecollars.invoicing.service.TaxCalculatorResult
 import pl.futurecollars.invoicing.utils.JsonService
 import spock.lang.Specification
 
@@ -83,12 +83,10 @@ class AbstractControllerTest extends Specification {
         jsonService.toJson(invoice(id))
     }
 
-    TaxCalculatorResult calculateTax(String taxIdentificationNumber) {
+    TaxCalculatorResult calculateTax(Company company) {
         def response = mockMvc.perform(
                 post("$TAX_CALCULATOR_ENDPOINT")
-                        .content(jsonService.toJson(
-                                Company.builder().taxIdentificationNumber(taxIdentificationNumber).build())
-                        )
+                        .content(jsonService.toJson(company))
                         .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isOk())
