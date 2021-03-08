@@ -104,7 +104,7 @@ codenarcTest {
     maxPriority3Violations = 999
 }
 
-task testsWithFileDatabase(type: Test) {
+task testWithFileDatabase(type: Test) {
     systemProperty 'spring.profiles.active', 'file'
 }
 
@@ -116,6 +116,6 @@ task testWithSqlDatabase(type: Test) {
     systemProperty 'spring.profiles.active', 'sql'
 }
 
-check.dependsOn testsWithFileDatabase
+check.dependsOn testWithFileDatabase
 check.dependsOn testWithMemoryDatabase
-check.dependsOn testWithSqlDatabase
+//check.dependsOn testWithSqlDatabase
