@@ -1,12 +1,6 @@
 server:
   port: 7777
 
-invoicing-system:
-  database: file
-  database.directory: db
-  database.invoices.file: invoices.txt
-  database.id.file: id.txt
-
 logging:
   level:
     org:
@@ -18,9 +12,7 @@ logging:
         invoicing.db: DEBUG
 
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/invoicing
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
-
+  profiles:
+    active: memory
+  flyway:
+    enabled: false
