@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.transaction.annotation.Transactional;
 import pl.futurecollars.invoicing.db.Database;
@@ -27,7 +28,7 @@ public class SqlDatabase implements Database {
   private final Map<Integer, Vat> idToVat = new HashMap<>();
 
   @PostConstruct
-  private void initVatRatesMap() {
+  void initVatRatesMap() { // default so it can be called from SqlDatabaseIntegrationTest
     jdbcTemplate.query("select * from vat",
         rs -> {
           Vat vat = Vat.valueOf("VAT_" + rs.getString("name"));
@@ -43,7 +44,7 @@ public class SqlDatabase implements Database {
     GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
     jdbcTemplate.update(connection -> {
       PreparedStatement ps = connection.prepareStatement(
-          "insert into company (name, address, tax_identification_number, pension_insurance, health_insurance) values (?, ?, ?, ?, ?);",
+          "insert into company (name, address, tax_identification_number, health_insurance, pension_insurance) values (?, ?, ?, ?, ?);",
           new String[] {"id"});
       ps.setString(1, invoice.getBuyer().getName());
       ps.setString(2, invoice.getBuyer().getAddress());
@@ -57,7 +58,7 @@ public class SqlDatabase implements Database {
 
     jdbcTemplate.update(connection -> {
       PreparedStatement ps = connection.prepareStatement(
-          "insert into company (name, address, tax_identification_number, pension_insurance, health_insurance) values (?, ?, ?, ?, ?);",
+          "insert into company (name, address, tax_identification_number, health_insurance, pension_insurance) values (?, ?, ?, ?, ?);",
           new String[] {"id"});
       ps.setString(1, invoice.getSeller().getName());
       ps.setString(2, invoice.getSeller().getAddress());
@@ -140,56 +141,71 @@ public class SqlDatabase implements Database {
             + "from invoice i "
             + "inner join company c1 on i.seller = c1.id "
             + "inner join company c2 on i.buyer = c2.id",
-        (rs, rowNr) -> {
-          int invoiceId = rs.getInt("id");
-
-          List<InvoiceEntry> invoiceEntries = jdbcTemplate.query(
-              "select * from invoice_invoice_entry iie "
-                  + "inner join invoice_entry e on iie.invoice_entry_id = e.id "
-                  + "left outer join car c on e.expense_related_to_car = c.id "
-                  + "where invoice_id = " + invoiceId,
-              (response, ignored) -> InvoiceEntry.builder()
-                  .description(response.getString("description"))
-                  .quantity(response.getInt("quantity"))
-                  .netPrice(response.getBigDecimal("net_price"))
-                  .vatValue(response.getBigDecimal("vat_value"))
-                  .vatRate(idToVat.get(response.getInt("vat_rate")))
-                  .expenseRelatedToCar(response.getObject("registration_number") != null
-                      ? Car.builder()
-                      .registrationNumber(response.getString("registration_number"))
-                      .personalUse(response.getBoolean("personal_use"))
-                      .build()
-                      : null)
-                  .build());
-
-          return Invoice.builder()
-              .id(rs.getInt("id"))
-              .date(rs.getDate("date").toLocalDate())
-              .number(rs.getString("number"))
-              .buyer(Company.builder()
-                  .taxIdentificationNumber(rs.getString("buyer_tax_id"))
-                  .name(rs.getString("buyer_name"))
-                  .address(rs.getString("buyer_address"))
-                  .pensionInsurance(rs.getBigDecimal("buyer_pension_insurance"))
-                  .healthInsurance(rs.getBigDecimal("buyer_health_insurance"))
-                  .build()
-              )
-              .seller(Company.builder()
-                  .taxIdentificationNumber(rs.getString("seller_tax_id"))
-                  .name(rs.getString("seller_name"))
-                  .address(rs.getString("seller_address"))
-                  .pensionInsurance(rs.getBigDecimal("seller_pension_insurance"))
-                  .healthInsurance(rs.getBigDecimal("seller_health_insurance"))
-                  .build()
-              )
-              .entries(invoiceEntries)
-              .build();
-        });
+        invoiceRowMapper());
   }
 
   @Override
   public Optional<Invoice> getById(int id) {
-    return Optional.empty();
+    List<Invoice> invoices = jdbcTemplate.query("select i.id, i.date, i.number, "
+            + "c1.name as seller_name, c1.tax_identification_number as seller_tax_id, c1.address as seller_address, "
+            + "c1.pension_insurance as seller_pension_insurance, c1.health_insurance as seller_health_insurance, "
+            + "c2.name as buyer_name, c2.tax_identification_number as buyer_tax_id, c2.address as buyer_address, "
+            + "c2.pension_insurance as buyer_pension_insurance, c2.health_insurance as buyer_health_insurance "
+            + "from invoice i "
+            + "inner join company c1 on i.seller = c1.id "
+            + "inner join company c2 on i.buyer = c2.id "
+            + "where i.id = " + id,
+        invoiceRowMapper());
+
+    return invoices.isEmpty() ? Optional.empty() : Optional.of(invoices.get(0));
+  }
+
+  private RowMapper<Invoice> invoiceRowMapper() {
+    return (rs, rowNr) -> {
+      int invoiceId = rs.getInt("id");
+
+      List<InvoiceEntry> invoiceEntries = jdbcTemplate.query(
+          "select * from invoice_invoice_entry iie "
+              + "inner join invoice_entry e on iie.invoice_entry_id = e.id "
+              + "left outer join car c on e.expense_related_to_car = c.id "
+              + "where invoice_id = " + invoiceId,
+          (response, ignored) -> InvoiceEntry.builder()
+              .description(response.getString("description"))
+              .quantity(response.getInt("quantity"))
+              .netPrice(response.getBigDecimal("net_price"))
+              .vatValue(response.getBigDecimal("vat_value"))
+              .vatRate(idToVat.get(response.getInt("vat_rate")))
+              .expenseRelatedToCar(response.getObject("registration_number") != null
+                  ? Car.builder()
+                  .registrationNumber(response.getString("registration_number"))
+                  .personalUse(response.getBoolean("personal_use"))
+                  .build()
+                  : null)
+              .build());
+
+      return Invoice.builder()
+          .id(rs.getInt("id"))
+          .date(rs.getDate("date").toLocalDate())
+          .number(rs.getString("number"))
+          .buyer(Company.builder()
+              .taxIdentificationNumber(rs.getString("buyer_tax_id"))
+              .name(rs.getString("buyer_name"))
+              .address(rs.getString("buyer_address"))
+              .pensionInsurance(rs.getBigDecimal("buyer_pension_insurance"))
+              .healthInsurance(rs.getBigDecimal("buyer_health_insurance"))
+              .build()
+          )
+          .seller(Company.builder()
+              .taxIdentificationNumber(rs.getString("seller_tax_id"))
+              .name(rs.getString("seller_name"))
+              .address(rs.getString("seller_address"))
+              .pensionInsurance(rs.getBigDecimal("seller_pension_insurance"))
+              .healthInsurance(rs.getBigDecimal("seller_health_insurance"))
+              .build()
+          )
+          .entries(invoiceEntries)
+          .build();
+    };
   }
 
   @Override
@@ -199,7 +215,16 @@ public class SqlDatabase implements Database {
 
   @Override
   public Optional<Invoice> delete(int id) {
-    return Optional.empty();
+    Optional<Invoice> invoice = getById(id);
+
+    jdbcTemplate.update(connection -> {
+      PreparedStatement ps = connection.prepareStatement(
+          "delete from invoice where id = ?;");
+      ps.setInt(1, id);
+      return ps;
+    });
+
+    return invoice;
   }
 
 }

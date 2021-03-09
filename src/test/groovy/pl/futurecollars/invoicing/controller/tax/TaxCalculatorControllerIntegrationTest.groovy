@@ -1,11 +1,10 @@
 package pl.futurecollars.invoicing.controller.tax
 
 import pl.futurecollars.invoicing.controller.AbstractControllerTest
-import pl.futurecollars.invoicing.model.Car
-import pl.futurecollars.invoicing.model.Company
-import pl.futurecollars.invoicing.model.Invoice
-import pl.futurecollars.invoicing.model.InvoiceEntry
+import pl.futurecollars.invoicing.model.*
 import spock.lang.Unroll
+
+import java.time.LocalDate
 
 import static pl.futurecollars.invoicing.helpers.TestHelpers.company
 
@@ -98,15 +97,19 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
     def "tax is calculated correctly when car is used for personal purposes"() {
         given:
         def invoice = Invoice.builder()
+                .date(LocalDate.now())
+                .number("no number :)")
                 .seller(company(1))
                 .buyer(company(2))
                 .entries(List.of(
                         InvoiceEntry.builder()
                                 .vatValue(BigDecimal.valueOf(23.45))
+                                .vatRate(Vat.VAT_23)
                                 .netPrice(BigDecimal.valueOf(100))
                                 .expenseRelatedToCar(
                                         Car.builder()
                                                 .personalUse(true)
+                                                .registrationNumber("KWI 555234")
                                                 .build()
                                 )
                                 .build()
@@ -142,26 +145,36 @@ class TaxCalculatorControllerIntegrationTest extends AbstractControllerTest {
         given:
         def ourCompany = Company.builder()
                 .taxIdentificationNumber("1234")
+                .address("no address exception ;)")
+                .name("i don't care about name")
                 .pensionInsurance(514.57)
                 .healthInsurance(319.94)
                 .build()
 
         def invoiceWithIncome = Invoice.builder()
+                .date(LocalDate.now())
+                .number("number is required")
                 .seller(ourCompany)
                 .buyer(company(2))
                 .entries(List.of(
                         InvoiceEntry.builder()
                                 .netPrice(76011.62)
+                                .vatValue(0.0)
+                                .vatRate(Vat.VAT_0)
                                 .build()
                 ))
                 .build()
 
         def invoiceWithCosts = Invoice.builder()
+                .date(LocalDate.now())
+                .number("number is required")
                 .seller(company(4))
                 .buyer(ourCompany)
                 .entries(List.of(
                         InvoiceEntry.builder()
                                 .netPrice(11329.47)
+                                .vatValue(0.0)
+                                .vatRate(Vat.VAT_ZW)
                                 .build()
                 ))
                 .build()

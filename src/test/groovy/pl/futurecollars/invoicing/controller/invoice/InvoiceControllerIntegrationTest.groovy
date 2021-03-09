@@ -3,6 +3,7 @@ package pl.futurecollars.invoicing.controller.invoice
 
 import org.springframework.http.MediaType
 import pl.futurecollars.invoicing.controller.AbstractControllerTest
+import spock.lang.Ignore
 import spock.lang.Unroll
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
@@ -42,13 +43,13 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
     def "correct invoice is returned when getting by id"() {
         given:
         def expectedInvoices = addUniqueInvoices(5)
-        def verifiedInvoice = expectedInvoices.get(2)
+        def expectedInvoice = expectedInvoices.get(2)
 
         when:
-        def invoice = getInvoiceById(verifiedInvoice.getId())
+        def invoice = getInvoiceById(expectedInvoice.getId())
 
         then:
-        invoice == verifiedInvoice
+        invoice == expectedInvoice
     }
 
     def "404 is returned when invoice id is not found when getting invoice by id [#id]"() {
@@ -98,6 +99,7 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
         id << [-100, -2, -1, 0, 12, 13, 99, 102, 1000]
     }
 
+    @Ignore // TODO [PK] enable after adding update
     def "invoice date can be modified"() {
         given:
         def id = addInvoiceAndReturnId(invoice(44))

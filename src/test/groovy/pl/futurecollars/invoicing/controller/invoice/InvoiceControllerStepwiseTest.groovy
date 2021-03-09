@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MockMvc
 import pl.futurecollars.invoicing.helpers.TestHelpers
 import pl.futurecollars.invoicing.model.Invoice
 import pl.futurecollars.invoicing.utils.JsonService
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -108,6 +109,8 @@ class InvoiceControllerStepwiseTest extends Specification {
         invoice == expectedInvoice
     }
 
+    @Ignore
+    // TODO [PK] enable after adding update
     def "invoice date can be modified"() {
         given:
         def modifiedInvoice = originalInvoice
@@ -125,6 +128,7 @@ class InvoiceControllerStepwiseTest extends Specification {
                 .andExpect(status().isNoContent())
     }
 
+    @Ignore // TODO [PK] enable after adding update
     def "updated invoice is returned correctly when getting by id"() {
         given:
         def expectedInvoice = originalInvoice
