@@ -272,6 +272,14 @@ public class SqlDatabase implements Database {
     });
 
     jdbcTemplate.update(connection -> {
+      PreparedStatement ps = connection.prepareStatement("delete from car where id in ("
+          + "select expense_related_to_car from invoice_entry where id in ("
+          + "select invoice_entry_id from invoice_invoice_entry where invoice_id=?));");
+      ps.setInt(1, id);
+      return ps;
+    });
+
+    jdbcTemplate.update(connection -> {
       PreparedStatement ps = connection.prepareStatement(
           "delete from invoice_entry where id in (select invoice_entry_id from invoice_invoice_entry where invoice_id=?);");
       ps.setInt(1, id);
@@ -312,8 +320,28 @@ public class SqlDatabase implements Database {
   @Override
   @Transactional
   public Optional<Invoice> delete(int id) {
-    Optional<Invoice> invoice = getById(id);
-    // TODO [PK] double check it deletes companies and entries
+    Optional<Invoice> invoiceOptional = getById(id);
+    if (invoiceOptional.isEmpty()) {
+      return invoiceOptional;
+    }
+
+    Invoice invoice = invoiceOptional.get();
+
+    jdbcTemplate.update(connection -> {
+      PreparedStatement ps = connection.prepareStatement("delete from car where id in ("
+          + "select expense_related_to_car from invoice_entry where id in ("
+          + "select invoice_entry_id from invoice_invoice_entry where invoice_id=?));");
+      ps.setInt(1, id);
+      return ps;
+    });
+
+    jdbcTemplate.update(connection -> {
+      PreparedStatement ps = connection.prepareStatement(
+          "delete from invoice_entry where id in (select invoice_entry_id from invoice_invoice_entry where invoice_id=?);");
+      ps.setInt(1, id);
+      return ps;
+    });
+
     jdbcTemplate.update(connection -> {
       PreparedStatement ps = connection.prepareStatement(
           "delete from invoice where id = ?;");
@@ -321,7 +349,15 @@ public class SqlDatabase implements Database {
       return ps;
     });
 
-    return invoice;
+    jdbcTemplate.update(connection -> {
+      PreparedStatement ps = connection.prepareStatement(
+          "delete from company where id in (?, ?);");
+      ps.setInt(1, invoice.getBuyer().getId());
+      ps.setInt(2, invoice.getSeller().getId());
+      return ps;
+    });
+
+    return invoiceOptional;
   }
 
 }

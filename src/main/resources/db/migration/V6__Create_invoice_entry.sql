@@ -12,8 +12,7 @@ CREATE TABLE public.invoice_entry
 
 ALTER TABLE public.invoice_entry
     ADD CONSTRAINT vat_rate_fk FOREIGN KEY (vat_rate)
-        REFERENCES public.vat (id)
-        ON DELETE CASCADE;
+        REFERENCES public.vat (id);
 
 ALTER TABLE public.invoice_entry
     ADD CONSTRAINT car_fk FOREIGN KEY (expense_related_to_car)
