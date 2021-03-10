@@ -8,14 +8,16 @@ import org.springframework.test.web.servlet.MockMvc
 import pl.futurecollars.invoicing.helpers.TestHelpers
 import pl.futurecollars.invoicing.model.Invoice
 import pl.futurecollars.invoicing.utils.JsonService
-import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 
 import java.time.LocalDate
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -30,9 +32,9 @@ class InvoiceControllerStepwiseTest extends Specification {
     @Autowired
     private JsonService jsonService
 
-    private Invoice originalInvoice = TestHelpers.invoice(1)
+    private final Invoice originalInvoice = TestHelpers.invoice(1)
 
-    private LocalDate updatedDate = LocalDate.of(2020, 02, 28)
+    private final LocalDate updatedDate = LocalDate.of(2020, 02, 28)
 
     @Shared
     private int invoiceId
@@ -48,7 +50,6 @@ class InvoiceControllerStepwiseTest extends Specification {
         then:
         response == "[]"
     }
-
 
     def "add single invoice"() {
         given:
@@ -109,8 +110,6 @@ class InvoiceControllerStepwiseTest extends Specification {
         invoice == expectedInvoice
     }
 
-    @Ignore
-    // TODO [PK] enable after adding update
     def "invoice date can be modified"() {
         given:
         def modifiedInvoice = originalInvoice
@@ -128,7 +127,6 @@ class InvoiceControllerStepwiseTest extends Specification {
                 .andExpect(status().isNoContent())
     }
 
-    @Ignore // TODO [PK] enable after adding update
     def "updated invoice is returned correctly when getting by id"() {
         given:
         def expectedInvoice = originalInvoice
@@ -161,4 +159,5 @@ class InvoiceControllerStepwiseTest extends Specification {
         mockMvc.perform(get("/invoices/$invoiceId"))
                 .andExpect(status().isNotFound())
     }
+
 }

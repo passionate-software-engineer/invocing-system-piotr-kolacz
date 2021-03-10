@@ -1,12 +1,12 @@
 package pl.futurecollars.invoicing.controller.invoice
 
-
 import org.springframework.http.MediaType
 import pl.futurecollars.invoicing.controller.AbstractControllerTest
-import spock.lang.Ignore
 import spock.lang.Unroll
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import static pl.futurecollars.invoicing.helpers.TestHelpers.invoice
 
@@ -62,7 +62,6 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
         )
                 .andExpect(status().isNotFound())
 
-
         where:
         id << [-100, -2, -1, 0, 168, 1256]
     }
@@ -76,7 +75,6 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
                 delete("$INVOICE_ENDPOINT/$id")
         )
                 .andExpect(status().isNotFound())
-
 
         where:
         id << [-100, -2, -1, 0, 12, 13, 99, 102, 1000]
@@ -94,13 +92,11 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
         )
                 .andExpect(status().isNotFound())
 
-
         where:
         id << [-100, -2, -1, 0, 12, 13, 99, 102, 1000]
     }
 
-    @Ignore // TODO [PK] enable after adding update
-    def "invoice date can be modified"() {
+    def "invoice can be modified"() {
         given:
         def id = addInvoiceAndReturnId(invoice(44))
         def updatedInvoice = invoice(123)

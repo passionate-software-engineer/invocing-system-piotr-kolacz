@@ -84,9 +84,7 @@ ruleset {
     DuplicateListLiteral
     DuplicateMapKey
     DuplicateMapLiteral
-    DuplicateNumberLiteral {
-        priority = 3
-    }
+//    DuplicateNumberLiteral
     DuplicateSetValue
     DuplicateStringLiteral
     ElseBlockBraces
@@ -169,8 +167,8 @@ ruleset {
     IllegalString
     IllegalSubclass
     ImplementationAsType
-    ImplicitClosureParameter
-    ImplicitReturnStatement
+//    ImplicitClosureParameter
+//    ImplicitReturnStatement
     ImportFromSamePackage
     ImportFromSunPackages
     InconsistentPropertyLocking
@@ -229,7 +227,7 @@ ruleset {
     MethodParameterTypeRequired
     // MethodReturnTypeRequired
     MethodSize
-    MisorderedStaticImports
+//    MisorderedStaticImports
     MissingBlankLineAfterImports
     MissingBlankLineAfterPackage
     MissingNewInThrowStatement
@@ -346,8 +344,8 @@ ruleset {
     UnnecessaryFail
     UnnecessaryFinalOnPrivateMethod
     UnnecessaryFloatInstantiation
-    UnnecessaryGString
-    UnnecessaryGetter
+//    UnnecessaryGString
+//    UnnecessaryGetter
     UnnecessaryGroovyImport
     UnnecessaryIfStatement
     UnnecessaryInstanceOfCheck
@@ -394,7 +392,7 @@ ruleset {
     UseCollectNested
     UseOfNotifyMethod
     VariableName
-    VariableTypeRequired
+//    VariableTypeRequired
     VectorIsObsolete
     VolatileArrayField
     VolatileLongOrDoubleField

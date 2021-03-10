@@ -134,9 +134,9 @@ public class SqlDatabase implements Database {
   @Override
   public List<Invoice> getAll() {
     return jdbcTemplate.query("select i.id, i.date, i.number, "
-            + "c1.name as seller_name, c1.tax_identification_number as seller_tax_id, c1.address as seller_address, "
+            + "c1.id as seller_id, c1.name as seller_name, c1.tax_identification_number as seller_tax_id, c1.address as seller_address, "
             + "c1.pension_insurance as seller_pension_insurance, c1.health_insurance as seller_health_insurance, "
-            + "c2.name as buyer_name, c2.tax_identification_number as buyer_tax_id, c2.address as buyer_address, "
+            + "c2.id as buyer_id, c2.name as buyer_name, c2.tax_identification_number as buyer_tax_id, c2.address as buyer_address, "
             + "c2.pension_insurance as buyer_pension_insurance, c2.health_insurance as buyer_health_insurance "
             + "from invoice i "
             + "inner join company c1 on i.seller = c1.id "
@@ -147,9 +147,9 @@ public class SqlDatabase implements Database {
   @Override
   public Optional<Invoice> getById(int id) {
     List<Invoice> invoices = jdbcTemplate.query("select i.id, i.date, i.number, "
-            + "c1.name as seller_name, c1.tax_identification_number as seller_tax_id, c1.address as seller_address, "
+            + "c1.id as seller_id, c1.name as seller_name, c1.tax_identification_number as seller_tax_id, c1.address as seller_address, "
             + "c1.pension_insurance as seller_pension_insurance, c1.health_insurance as seller_health_insurance, "
-            + "c2.name as buyer_name, c2.tax_identification_number as buyer_tax_id, c2.address as buyer_address, "
+            + "c2.id as buyer_id, c2.name as buyer_name, c2.tax_identification_number as buyer_tax_id, c2.address as buyer_address, "
             + "c2.pension_insurance as buyer_pension_insurance, c2.health_insurance as buyer_health_insurance "
             + "from invoice i "
             + "inner join company c1 on i.seller = c1.id "
@@ -188,6 +188,7 @@ public class SqlDatabase implements Database {
           .date(rs.getDate("date").toLocalDate())
           .number(rs.getString("number"))
           .buyer(Company.builder()
+              .id(rs.getInt("buyer_id"))
               .taxIdentificationNumber(rs.getString("buyer_tax_id"))
               .name(rs.getString("buyer_name"))
               .address(rs.getString("buyer_address"))
@@ -196,6 +197,7 @@ public class SqlDatabase implements Database {
               .build()
           )
           .seller(Company.builder()
+              .id(rs.getInt("seller_id"))
               .taxIdentificationNumber(rs.getString("seller_tax_id"))
               .name(rs.getString("seller_name"))
               .address(rs.getString("seller_address"))
@@ -209,14 +211,109 @@ public class SqlDatabase implements Database {
   }
 
   @Override
+  @Transactional
   public Optional<Invoice> update(int id, Invoice updatedInvoice) {
-    return Optional.empty();
+    Optional<Invoice> originalInvoice = getById(id);
+
+    if (originalInvoice.isEmpty()) {
+      return originalInvoice;
+    }
+
+    jdbcTemplate.update(connection -> {
+      PreparedStatement ps = connection.prepareStatement(
+          "update company "
+              + "set name=?, "
+              + "address=?, "
+              + "tax_identification_number=?, "
+              + "health_insurance=?, "
+              + "pension_insurance=? "
+              + "where id=?"
+      );
+      ps.setString(1, updatedInvoice.getBuyer().getName());
+      ps.setString(2, updatedInvoice.getBuyer().getAddress());
+      ps.setString(3, updatedInvoice.getBuyer().getTaxIdentificationNumber());
+      ps.setBigDecimal(4, updatedInvoice.getBuyer().getHealthInsurance());
+      ps.setBigDecimal(5, updatedInvoice.getBuyer().getPensionInsurance());
+      ps.setInt(6, originalInvoice.get().getBuyer().getId());
+      return ps;
+    });
+
+    jdbcTemplate.update(connection -> { // TODO [PK] remove duplicates
+      PreparedStatement ps = connection.prepareStatement(
+          "update company "
+              + "set name=?, "
+              + "address=?, "
+              + "tax_identification_number=?, "
+              + "health_insurance=?, "
+              + "pension_insurance=? "
+              + "where id=?"
+      );
+      ps.setString(1, updatedInvoice.getSeller().getName());
+      ps.setString(2, updatedInvoice.getSeller().getAddress());
+      ps.setString(3, updatedInvoice.getSeller().getTaxIdentificationNumber());
+      ps.setBigDecimal(4, updatedInvoice.getSeller().getHealthInsurance());
+      ps.setBigDecimal(5, updatedInvoice.getSeller().getPensionInsurance());
+      ps.setInt(6, originalInvoice.get().getSeller().getId());
+      return ps;
+    });
+
+    jdbcTemplate.update(connection -> {
+      PreparedStatement ps =
+          connection.prepareStatement(
+              "update invoice "
+                  + "set date=?, "
+                  + "number=? "
+                  + "where id=?"
+          );
+      ps.setDate(1, Date.valueOf(updatedInvoice.getDate()));
+      ps.setString(2, updatedInvoice.getNumber());
+      ps.setInt(3, id);
+      return ps;
+    });
+
+    jdbcTemplate.update(connection -> {
+      PreparedStatement ps = connection.prepareStatement(
+          "delete from invoice_entry where id in (select invoice_entry_id from invoice_invoice_entry where invoice_id=?);");
+      ps.setInt(1, id);
+      return ps;
+    });
+
+    GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+    updatedInvoice.getEntries().forEach(entry -> {
+      jdbcTemplate.update(connection -> {
+        PreparedStatement ps = connection
+            .prepareStatement(
+                "insert into invoice_entry (description, quantity, net_price, vat_value, vat_rate, expense_related_to_car) "
+                    + "values (?, ?, ?, ?, ?, ?);",
+                new String[] {"id"});
+        ps.setString(1, entry.getDescription());
+        ps.setInt(2, entry.getQuantity());
+        ps.setBigDecimal(3, entry.getNetPrice());
+        ps.setBigDecimal(4, entry.getVatValue());
+        ps.setInt(5, vatToId.get(entry.getVatRate()));
+        ps.setObject(6, getCarId(entry.getExpenseRelatedToCar()));
+        return ps;
+      }, keyHolder);
+
+      int invoiceEntryId = keyHolder.getKey().intValue();
+
+      jdbcTemplate.update(connection -> {
+        PreparedStatement ps = connection.prepareStatement(
+            "insert into invoice_invoice_entry (invoice_id, invoice_entry_id) values (?, ?);");
+        ps.setInt(1, id);
+        ps.setInt(2, invoiceEntryId);
+        return ps;
+      });
+    });
+
+    return originalInvoice;
   }
 
   @Override
+  @Transactional
   public Optional<Invoice> delete(int id) {
     Optional<Invoice> invoice = getById(id);
-
+    // TODO [PK] double check it deletes companies and entries
     jdbcTemplate.update(connection -> {
       PreparedStatement ps = connection.prepareStatement(
           "delete from invoice where id = ?;");

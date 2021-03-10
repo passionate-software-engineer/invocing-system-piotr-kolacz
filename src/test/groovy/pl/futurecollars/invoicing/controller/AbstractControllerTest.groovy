@@ -11,7 +11,9 @@ import pl.futurecollars.invoicing.service.TaxCalculatorResult
 import pl.futurecollars.invoicing.utils.JsonService
 import spock.lang.Specification
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import static pl.futurecollars.invoicing.helpers.TestHelpers.invoice
 
@@ -60,7 +62,7 @@ class AbstractControllerTest extends Specification {
         (1..count).collect { id ->
             def invoice = invoice(id)
             invoice.id = addInvoiceAndReturnId(invoice)
-            return invoice
+            invoice
         }
     }
 

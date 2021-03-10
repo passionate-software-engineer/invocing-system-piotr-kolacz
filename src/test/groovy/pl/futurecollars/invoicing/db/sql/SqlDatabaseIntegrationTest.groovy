@@ -27,6 +27,7 @@ class SqlDatabaseIntegrationTest extends AbstractDatabaseTest {
         def database = new SqlDatabase(jdbcTemplate)
         database.initVatRatesMap() // need to call explicitly because we do not create it as spring bean
 
-        return database
+        database
     }
+
 }

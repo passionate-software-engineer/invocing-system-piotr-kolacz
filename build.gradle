@@ -53,13 +53,13 @@ jacocoTestCoverageVerification {
         rule {
             limit {
                 counter = 'BRANCH'
-                minimum = 0.5 // TODO [PK] revert after fixing tests
+                minimum = 0.80
             }
         }
         rule {
             limit {
                 counter = 'LINE'
-                minimum = 0.5 // TODO [PK] revert after fixing tests
+                minimum = 0.85
             }
         }
     }
@@ -101,7 +101,7 @@ codenarcTest {
     configFile = file('config/codenarc/codenarc.groovy')
     maxPriority1Violations = 0
     maxPriority2Violations = 0
-    maxPriority3Violations = 999
+    maxPriority3Violations = 0
 }
 
 task testWithFileDatabase(type: Test) {
