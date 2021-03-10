@@ -1,5 +1,6 @@
 buildscript {
     ext {
+        flywayVersion = '7.6.0'
         lombokVersion = '1.18.18'
         spockVersion = '1.3-groovy-2.5'
         springBootVersion = '2.4.2'
@@ -26,12 +27,17 @@ repositories {
 dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
+    compile "org.flywaydb:flyway-core:${flywayVersion}"
+
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
 
     implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation "io.springfox:springfox-boot-starter:${springFoxStarterVersion}"
     implementation "io.springfox:springfox-swagger-ui:${springFoxUiVersion}"
 
+    runtimeOnly 'com.h2database:h2:1.4.200'
+    runtimeOnly 'org.postgresql:postgresql:42.2.19'
 
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
@@ -47,7 +53,7 @@ jacocoTestCoverageVerification {
         rule {
             limit {
                 counter = 'BRANCH'
-                minimum = 0.85
+                minimum = 0.80
             }
         }
         rule {
@@ -84,10 +90,6 @@ jacocoTestReport {
     dependsOn test // tests are required to run before generating the report
 }
 
-tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:all" << "-Xlint:-processing" << "-Werror"
-}
-
 checkstyle {
     showViolations = true
     ignoreFailures = false
@@ -101,3 +103,19 @@ codenarcTest {
     maxPriority2Violations = 0
     maxPriority3Violations = 999
 }
+
+task testWithFileDatabase(type: Test) {
+    systemProperty 'spring.profiles.active', 'file'
+}
+
+task testWithMemoryDatabase(type: Test) {
+    systemProperty 'spring.profiles.active', 'memory'
+}
+
+task testWithSqlDatabase(type: Test) {
+    systemProperty 'spring.profiles.active', 'sql'
+}
+
+check.dependsOn testWithFileDatabase
+check.dependsOn testWithMemoryDatabase
+//check.dependsOn testWithSqlDatabase

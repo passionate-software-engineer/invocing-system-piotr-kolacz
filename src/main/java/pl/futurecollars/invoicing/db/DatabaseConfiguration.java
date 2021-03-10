@@ -19,6 +19,7 @@ import pl.futurecollars.invoicing.utils.JsonService;
 public class DatabaseConfiguration {
 
   @Bean
+  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "file")
   public IdProvider idProvider(
       FilesService filesService,
       @Value("${invoicing-system.database.directory}") String databaseDirectory,
@@ -28,8 +29,8 @@ public class DatabaseConfiguration {
     return new IdProvider(idFilePath, filesService);
   }
 
-  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "file")
   @Bean
+  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "file")
   public Database fileBasedDatabase(
       IdProvider idProvider,
       FilesService filesService,
@@ -37,15 +38,13 @@ public class DatabaseConfiguration {
       @Value("${invoicing-system.database.directory}") String databaseDirectory,
       @Value("${invoicing-system.database.invoices.file}") String invoicesFile
   ) throws IOException {
-    log.debug("Creating in-file database");
     Path databaseFilePath = Files.createTempFile(databaseDirectory, invoicesFile);
     return new FileBasedDatabase(databaseFilePath, idProvider, filesService, jsonService);
   }
 
-  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "memory")
   @Bean
+  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "memory")
   public Database inMemoryDatabase() {
-    log.debug("Creating in-memory database");
     return new InMemoryDatabase();
   }
 
