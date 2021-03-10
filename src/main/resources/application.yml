@@ -13,6 +13,6 @@ logging:
 
 spring:
   profiles:
-    active: jpa
+    active: sql
   flyway:
     enabled: false
