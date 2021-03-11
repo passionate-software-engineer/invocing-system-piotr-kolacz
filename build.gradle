@@ -121,7 +121,11 @@ task testWithJpaDatabase(type: Test) {
     systemProperty 'spring.profiles.active', 'jpa'
 }
 
-task testWithPostgreSqlDatabase(type: Test) { // only for local use
+task testWithJpaFlywayDatabase(type: Test) {
+    systemProperty 'spring.profiles.active', 'jpa-flyway'
+}
+
+task testWithPostgreSqlDatabase(type: Test) {
     systemProperty 'spring.profiles.active', 'sql-pg'
 }
 
@@ -129,3 +133,9 @@ check.dependsOn testWithFileDatabase
 check.dependsOn testWithMemoryDatabase
 check.dependsOn testWithSqlDatabase
 check.dependsOn testWithJpaDatabase
+check.dependsOn testWithJpaFlywayDatabase
+
+String osName = System.getProperty("os.name").toLowerCase()
+if (osName.contains("mac")) {
+    check.dependsOn testWithPostgreSqlDatabase
+}

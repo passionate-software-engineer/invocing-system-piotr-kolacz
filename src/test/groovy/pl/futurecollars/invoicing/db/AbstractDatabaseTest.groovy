@@ -25,11 +25,11 @@ abstract class AbstractDatabaseTest extends Specification {
         def ids = invoices.collect { it.id = database.save(it) }
 
         then:
-        ids == (1..invoices.size()).collect()
+        ids == (1L..invoices.size()).collect()
         ids.forEach { assert database.getById(it).isPresent() }
         ids.forEach { assert database.getById(it).get().getId() == it }
         ids.forEach {
-            def expectedInvoice = resetIds(invoices.get(it - 1))
+            def expectedInvoice = resetIds(invoices.get((int) it - 1))
             def invoiceFromDb = resetIds(database.getById(it).get())
             assert invoiceFromDb.toString() == expectedInvoice.toString()
         }
