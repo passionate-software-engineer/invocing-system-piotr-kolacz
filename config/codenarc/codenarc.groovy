@@ -363,9 +363,7 @@ ruleset {
     UnnecessaryReturnKeyword
     UnnecessarySafeNavigationOperator
     UnnecessarySelfAssignment
-    UnnecessarySemicolon {
-        priority = 2
-    }
+    UnnecessarySemicolon
     UnnecessarySetter
     UnnecessaryStringInstantiation
     UnnecessarySubstring
