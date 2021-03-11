@@ -117,6 +117,10 @@ task testWithSqlDatabase(type: Test) {
     systemProperty 'spring.profiles.active', 'sql'
 }
 
+task testWithJpaDatabase(type: Test) {
+    systemProperty 'spring.profiles.active', 'jpa'
+}
+
 task testWithPostgreSqlDatabase(type: Test) { // only for local use
     systemProperty 'spring.profiles.active', 'sql-pg'
 }
@@ -124,3 +128,4 @@ task testWithPostgreSqlDatabase(type: Test) { // only for local use
 check.dependsOn testWithFileDatabase
 check.dependsOn testWithMemoryDatabase
 check.dependsOn testWithSqlDatabase
+check.dependsOn testWithJpaDatabase
