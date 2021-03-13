@@ -92,7 +92,7 @@ public class SqlDatabase implements Database {
     return keyHolder.getKey().intValue();
   }
 
-  private Integer getCarId(Car car) {
+  private Integer insertCarAndGetItId(Car car) {
     if (car == null) {
       return null;
     }
@@ -240,7 +240,7 @@ public class SqlDatabase implements Database {
         ps.setBigDecimal(3, entry.getNetPrice());
         ps.setBigDecimal(4, entry.getVatValue());
         ps.setInt(5, vatToId.get(entry.getVatRate()));
-        ps.setObject(6, getCarId(entry.getExpenseRelatedToCar()));
+        ps.setObject(6, insertCarAndGetItId(entry.getExpenseRelatedToCar()));
         return ps;
       }, keyHolder);
 
