@@ -222,7 +222,7 @@ public class SqlDatabase implements Database {
         ps.setBigDecimal(2, entry.getQuantity());
         ps.setBigDecimal(3, entry.getNetPrice());
         ps.setBigDecimal(4, entry.getVatValue());
-        ps.setInt(5, entry.getVatRate().name());
+        ps.setString(5, entry.getVatRate().name());
         ps.setObject(6, insertCarAndGetItId(entry.getExpenseRelatedToCar()));
         return ps;
       }, keyHolder);
