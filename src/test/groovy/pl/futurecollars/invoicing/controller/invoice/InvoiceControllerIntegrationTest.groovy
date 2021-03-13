@@ -1,11 +1,12 @@
 package pl.futurecollars.invoicing.controller.invoice
 
-
 import org.springframework.http.MediaType
 import pl.futurecollars.invoicing.controller.AbstractControllerTest
 import spock.lang.Unroll
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import static pl.futurecollars.invoicing.helpers.TestHelpers.invoice
 
@@ -42,13 +43,13 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
     def "correct invoice is returned when getting by id"() {
         given:
         def expectedInvoices = addUniqueInvoices(5)
-        def verifiedInvoice = expectedInvoices.get(2)
+        def expectedInvoice = expectedInvoices.get(2)
 
         when:
-        def invoice = getInvoiceById(verifiedInvoice.getId())
+        def invoice = getInvoiceById(expectedInvoice.getId())
 
         then:
-        invoice == verifiedInvoice
+        invoice == expectedInvoice
     }
 
     def "404 is returned when invoice id is not found when getting invoice by id [#id]"() {
@@ -60,7 +61,6 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
                 get("$INVOICE_ENDPOINT/$id")
         )
                 .andExpect(status().isNotFound())
-
 
         where:
         id << [-100, -2, -1, 0, 168, 1256]
@@ -75,7 +75,6 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
                 delete("$INVOICE_ENDPOINT/$id")
         )
                 .andExpect(status().isNotFound())
-
 
         where:
         id << [-100, -2, -1, 0, 12, 13, 99, 102, 1000]
@@ -93,12 +92,11 @@ class InvoiceControllerIntegrationTest extends AbstractControllerTest {
         )
                 .andExpect(status().isNotFound())
 
-
         where:
         id << [-100, -2, -1, 0, 12, 13, 99, 102, 1000]
     }
 
-    def "invoice date can be modified"() {
+    def "invoice can be modified"() {
         given:
         def id = addInvoiceAndReturnId(invoice(44))
         def updatedInvoice = invoice(123)

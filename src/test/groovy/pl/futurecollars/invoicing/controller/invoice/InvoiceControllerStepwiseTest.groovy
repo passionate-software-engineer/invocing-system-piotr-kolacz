@@ -14,7 +14,10 @@ import spock.lang.Stepwise
 
 import java.time.LocalDate
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -29,9 +32,9 @@ class InvoiceControllerStepwiseTest extends Specification {
     @Autowired
     private JsonService jsonService
 
-    private Invoice originalInvoice = TestHelpers.invoice(1)
+    private final Invoice originalInvoice = TestHelpers.invoice(1)
 
-    private LocalDate updatedDate = LocalDate.of(2020, 02, 28)
+    private final LocalDate updatedDate = LocalDate.of(2020, 02, 28)
 
     @Shared
     private int invoiceId
@@ -47,7 +50,6 @@ class InvoiceControllerStepwiseTest extends Specification {
         then:
         response == "[]"
     }
-
 
     def "add single invoice"() {
         given:
@@ -157,4 +159,5 @@ class InvoiceControllerStepwiseTest extends Specification {
         mockMvc.perform(get("/invoices/$invoiceId"))
                 .andExpect(status().isNotFound())
     }
+
 }
