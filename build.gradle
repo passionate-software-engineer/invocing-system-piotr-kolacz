@@ -52,17 +52,18 @@ dependencies {
 }
 
 jacocoTestCoverageVerification {
+    executionData tasks.withType(Test)
     violationRules {
         rule {
             limit {
                 counter = 'BRANCH'
-                minimum = 0.80
+                minimum = 0.90
             }
         }
         rule {
             limit {
                 counter = 'LINE'
-                minimum = 0.85
+                minimum = 0.90
             }
         }
     }
@@ -90,7 +91,8 @@ check {
 }
 
 jacocoTestReport {
-    dependsOn check // tests are required to run before generating the report
+    executionData tasks.withType(Test)
+    dependsOn check
 }
 
 checkstyle {
