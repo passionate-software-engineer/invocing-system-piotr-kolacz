@@ -9,7 +9,7 @@ import pl.futurecollars.invoicing.db.Database;
 import pl.futurecollars.invoicing.model.Invoice;
 
 @AllArgsConstructor
-public class JpaDatabase implements Database {
+public class JpaDatabase implements Database<Invoice> {
 
   private final InvoiceRepository invoiceRepository;
 

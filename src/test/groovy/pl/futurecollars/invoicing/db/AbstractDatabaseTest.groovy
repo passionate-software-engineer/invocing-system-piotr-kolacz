@@ -9,13 +9,16 @@ abstract class AbstractDatabaseTest extends Specification {
 
     List<Invoice> invoices = (1..12).collect { invoice(it) }
 
-    abstract Database getDatabaseInstance()
+    abstract Database<Invoice> getDatabaseInstance()
 
-    Database database
+    Database<Invoice> database
 
     def setup() {
         database = getDatabaseInstance()
-        database.reset()
+
+        database.getAll().forEach {
+            invoice -> database.delete(invoice.getId())
+        }
 
         assert database.getAll().isEmpty()
     }

@@ -1,4 +1,4 @@
-package pl.futurecollars.invoicing.service;
+package pl.futurecollars.invoicing.service.invoice;
 
 import java.util.List;
 import java.util.Optional;
