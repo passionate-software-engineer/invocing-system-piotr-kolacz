@@ -2,6 +2,7 @@ buildscript {
     ext {
         flywayVersion = '7.6.0'
         lombokVersion = '1.18.18'
+        mongoVersion = '3.12.8'
         spockVersion = '1.3-groovy-2.5'
         springBootVersion = '2.4.2'
         springFoxStarterVersion = '3.0.0'
@@ -36,6 +37,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation "io.springfox:springfox-boot-starter:${springFoxStarterVersion}"
     implementation "io.springfox:springfox-swagger-ui:${springFoxUiVersion}"
+    implementation "org.mongodb:mongo-java-driver:${mongoVersion}"
 
     runtimeOnly 'com.h2database:h2:1.4.200'
     runtimeOnly 'org.postgresql:postgresql:42.2.19'
@@ -79,7 +81,7 @@ java {
     }
 }
 
-test {
+check {
     finalizedBy jacocoTestReport
 }
 
@@ -88,7 +90,7 @@ check {
 }
 
 jacocoTestReport {
-    dependsOn test // tests are required to run before generating the report
+    dependsOn check // tests are required to run before generating the report
 }
 
 checkstyle {
@@ -99,6 +101,7 @@ checkstyle {
 }
 
 codenarcTest {
+    compilationClasspath = sourceSets.main.compileClasspath + sourceSets.main.output + sourceSets.test.compileClasspath + sourceSets.test.output
     configFile = file('config/codenarc/codenarc.groovy')
     maxPriority1Violations = 0
     maxPriority2Violations = 0
@@ -129,11 +132,16 @@ task testWithPostgreSqlDatabase(type: Test) {
     systemProperty 'spring.profiles.active', 'sql-pg'
 }
 
+task testWithMongoDatabase(type: Test) {
+    systemProperty 'spring.profiles.active', 'mongo'
+}
+
 check.dependsOn testWithFileDatabase
 check.dependsOn testWithMemoryDatabase
 check.dependsOn testWithSqlDatabase
 check.dependsOn testWithJpaDatabase
 check.dependsOn testWithJpaFlywayDatabase
+check.dependsOn testWithMongoDatabase
 
 String osName = System.getProperty("os.name").toLowerCase()
 if (osName.contains("mac")) {
