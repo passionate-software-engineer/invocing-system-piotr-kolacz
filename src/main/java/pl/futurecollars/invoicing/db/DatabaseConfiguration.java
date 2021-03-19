@@ -138,19 +138,24 @@ public class DatabaseConfiguration {
 
   @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "mongo")
-  public Database<Invoice> mongoDatabase(
-      @Value("${invoicing-system.database.collection}") String collectionName,
+  public Database<Invoice> invoiceMongoDatabase(
+      @Value("${invoicing-system.database.invoice.collection}") String collectionName,
       MongoDatabase mongoDb,
       MongoIdProvider mongoIdProvider
   ) {
     MongoCollection<Invoice> collection = mongoDb.getCollection(collectionName, Invoice.class);
-    return new MongoBasedDatabase(collection, mongoIdProvider);
+    return new MongoBasedDatabase<>(collection, mongoIdProvider);
   }
 
-  @Bean // TODO [PK] workaround until correct implementation is available
+  @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "mongo")
-  public Database<Company> companyMongoDatabase() {
-    return new InMemoryDatabase<>();
+  public Database<Company> companyMongoDatabase(
+      @Value("${invoicing-system.database.company.collection}") String collectionName,
+      MongoDatabase mongoDb,
+      MongoIdProvider mongoIdProvider
+  ) {
+    MongoCollection<Company> collection = mongoDb.getCollection(collectionName, Company.class);
+    return new MongoBasedDatabase<>(collection, mongoIdProvider);
   }
 
 }

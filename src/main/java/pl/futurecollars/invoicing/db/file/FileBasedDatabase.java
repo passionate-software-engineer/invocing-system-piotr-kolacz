@@ -41,7 +41,7 @@ public class FileBasedDatabase<T extends WithId> implements Database<T> {
           .map(line -> jsonService.toObject(line, clazz))
           .findFirst();
     } catch (IOException ex) {
-      throw new RuntimeException("Database failed to get invoice with id: " + id, ex);
+      throw new RuntimeException("Database failed to get item with id: " + id, ex);
     }
   }
 
@@ -53,30 +53,30 @@ public class FileBasedDatabase<T extends WithId> implements Database<T> {
           .map(line -> jsonService.toObject(line, clazz))
           .collect(Collectors.toList());
     } catch (IOException ex) {
-      throw new RuntimeException("Failed to read invoices from file", ex);
+      throw new RuntimeException("Failed to read items from file", ex);
     }
   }
 
   @Override
   public Optional<T> update(long id, T updatedItem) {
     try {
-      List<String> allInvoices = filesService.readAllLines(databasePath);
-      var invoicesWithoutInvoiceWithGivenId = allInvoices
+      List<String> allItems = filesService.readAllLines(databasePath);
+      var itemsWithoutItemWithGivenId = allItems
           .stream()
           .filter(line -> !containsId(line, id))
           .collect(Collectors.toList());
 
       updatedItem.setId(id);
-      invoicesWithoutInvoiceWithGivenId.add(jsonService.toJson(updatedItem));
+      itemsWithoutItemWithGivenId.add(jsonService.toJson(updatedItem));
 
-      filesService.writeLinesToFile(databasePath, invoicesWithoutInvoiceWithGivenId);
+      filesService.writeLinesToFile(databasePath, itemsWithoutItemWithGivenId);
 
-      allInvoices.removeAll(invoicesWithoutInvoiceWithGivenId);
-      return allInvoices.isEmpty() ? Optional.empty()
-          : Optional.of(jsonService.toObject(allInvoices.get(0), clazz));
+      allItems.removeAll(itemsWithoutItemWithGivenId);
+      return allItems.isEmpty() ? Optional.empty()
+          : Optional.of(jsonService.toObject(allItems.get(0), clazz));
 
     } catch (IOException ex) {
-      throw new RuntimeException("Failed to update invoice with id: " + id, ex);
+      throw new RuntimeException("Failed to update item with id: " + id, ex);
     }
 
   }
@@ -84,22 +84,22 @@ public class FileBasedDatabase<T extends WithId> implements Database<T> {
   @Override
   public Optional<T> delete(long id) {
     try {
-      var allInvoices = filesService.readAllLines(databasePath);
+      var allItems = filesService.readAllLines(databasePath);
 
-      var invoicesExceptDeleted = allInvoices
+      var itemsExceptDeleted = allItems
           .stream()
           .filter(line -> !containsId(line, id))
           .collect(Collectors.toList());
 
-      filesService.writeLinesToFile(databasePath, invoicesExceptDeleted);
+      filesService.writeLinesToFile(databasePath, itemsExceptDeleted);
 
-      allInvoices.removeAll(invoicesExceptDeleted);
+      allItems.removeAll(itemsExceptDeleted);
 
-      return allInvoices.isEmpty() ? Optional.empty() :
-          Optional.of(jsonService.toObject(allInvoices.get(0), clazz));
+      return allItems.isEmpty() ? Optional.empty() :
+          Optional.of(jsonService.toObject(allItems.get(0), clazz));
 
     } catch (IOException ex) {
-      throw new RuntimeException("Failed to delete invoice with id: " + id, ex);
+      throw new RuntimeException("Failed to delete item with id: " + id, ex);
     }
   }
 
