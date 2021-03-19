@@ -50,7 +50,7 @@ public class DatabaseConfiguration {
 
   @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "file")
-  public Database<Invoice> fileBasedDatabase(
+  public Database<Invoice> invoiceFileBasedDatabase(
       IdProvider idProvider,
       FilesService filesService,
       JsonService jsonService,
@@ -58,7 +58,20 @@ public class DatabaseConfiguration {
       @Value("${invoicing-system.database.invoices.file}") String invoicesFile
   ) throws IOException {
     Path databaseFilePath = Files.createTempFile(databaseDirectory, invoicesFile);
-    return new FileBasedDatabase(databaseFilePath, idProvider, filesService, jsonService);
+    return new FileBasedDatabase<>(databaseFilePath, idProvider, filesService, jsonService, Invoice.class);
+  }
+
+  @Bean
+  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "file")
+  public Database<Company> companyFileBasedDatabase(
+      IdProvider idProvider,
+      FilesService filesService,
+      JsonService jsonService,
+      @Value("${invoicing-system.database.directory}") String databaseDirectory,
+      @Value("${invoicing-system.database.companies.file}") String companiesFile
+  ) throws IOException {
+    Path databaseFilePath = Files.createTempFile(databaseDirectory, companiesFile);
+    return new FileBasedDatabase<>(databaseFilePath, idProvider, filesService, jsonService, Company.class);
   }
 
   @Bean
@@ -67,10 +80,22 @@ public class DatabaseConfiguration {
     return new SqlDatabase(jdbcTemplate);
   }
 
+  @Bean // TODO [PK] workaround until correct implementation is available
+  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "sql")
+  public Database<Company> companySqlDatabase() {
+    return new InMemoryDatabase<>();
+  }
+
   @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "jpa")
   public Database<Invoice> jpaDatabase(InvoiceRepository invoiceRepository) {
     return new JpaDatabase(invoiceRepository);
+  }
+
+  @Bean // TODO [PK] workaround until correct implementation is available
+  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "jpa")
+  public Database<Company> companyJpaDatabase() {
+    return new InMemoryDatabase<>();
   }
 
   @Bean
@@ -80,7 +105,7 @@ public class DatabaseConfiguration {
   }
 
   @Bean
-  //  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "memory") // TODO [PK] enable
+  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "memory")
   public Database<Company> companyInMemoryDatabase() {
     return new InMemoryDatabase<>();
   }
@@ -120,6 +145,12 @@ public class DatabaseConfiguration {
   ) {
     MongoCollection<Invoice> collection = mongoDb.getCollection(collectionName, Invoice.class);
     return new MongoBasedDatabase(collection, mongoIdProvider);
+  }
+
+  @Bean // TODO [PK] workaround until correct implementation is available
+  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "mongo")
+  public Database<Company> companyMongoDatabase() {
+    return new InMemoryDatabase<>();
   }
 
 }
