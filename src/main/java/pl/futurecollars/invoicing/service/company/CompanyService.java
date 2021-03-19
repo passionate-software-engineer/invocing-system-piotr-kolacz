@@ -28,6 +28,7 @@ public class CompanyService {
   }
 
   public Optional<Company> update(long id, Company updatedCompany) {
+    updatedCompany.setId(id); // just in case it was not set
     return database.update(id, updatedCompany);
   }
 

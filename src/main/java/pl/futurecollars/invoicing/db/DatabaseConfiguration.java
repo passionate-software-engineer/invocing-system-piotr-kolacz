@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import pl.futurecollars.invoicing.db.file.FileBasedDatabase;
 import pl.futurecollars.invoicing.db.file.IdProvider;
+import pl.futurecollars.invoicing.db.jpa.CompanyRepository;
 import pl.futurecollars.invoicing.db.jpa.InvoiceRepository;
 import pl.futurecollars.invoicing.db.jpa.JpaDatabase;
 import pl.futurecollars.invoicing.db.memory.InMemoryDatabase;
@@ -88,14 +89,14 @@ public class DatabaseConfiguration {
 
   @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "jpa")
-  public Database<Invoice> jpaDatabase(InvoiceRepository invoiceRepository) {
-    return new JpaDatabase(invoiceRepository);
+  public Database<Invoice> invoiceJpaDatabase(InvoiceRepository repository) {
+    return new JpaDatabase<>(repository);
   }
 
-  @Bean // TODO [PK] workaround until correct implementation is available
+  @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "jpa")
-  public Database<Company> companyJpaDatabase() {
-    return new InMemoryDatabase<>();
+  public Database<Company> companyJpaDatabase(CompanyRepository repository) {
+    return new JpaDatabase<>(repository);
   }
 
   @Bean

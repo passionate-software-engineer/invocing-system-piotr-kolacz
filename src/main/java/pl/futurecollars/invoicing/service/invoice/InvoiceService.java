@@ -28,6 +28,7 @@ public class InvoiceService {
   }
 
   public Optional<Invoice> update(long id, Invoice updatedInvoice) {
+    updatedInvoice.setId(id); // just in case it was not set
     return database.update(id, updatedInvoice);
   }
 
