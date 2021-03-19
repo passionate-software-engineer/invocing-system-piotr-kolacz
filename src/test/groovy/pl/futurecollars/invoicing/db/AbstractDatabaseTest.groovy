@@ -4,6 +4,7 @@ import pl.futurecollars.invoicing.model.Invoice
 import spock.lang.Specification
 
 import static pl.futurecollars.invoicing.helpers.TestHelpers.invoice
+import static pl.futurecollars.invoicing.helpers.TestHelpers.resetIds
 
 abstract class AbstractDatabaseTest extends Specification {
 
@@ -130,17 +131,6 @@ abstract class AbstractDatabaseTest extends Specification {
     def "updating not existing invoice returns Optional.empty()"() {
         expect:
         database.update(213, invoices.get(1)) == Optional.empty()
-    }
-
-    // resetting is necessary because database query returns ids while we don't know ids in original invoice
-    private static Invoice resetIds(Invoice invoice) {
-        invoice.getBuyer().id = null
-        invoice.getSeller().id = null
-        invoice.entries.forEach {
-            it.id = null
-            it.expenseRelatedToCar?.id = null
-        }
-        invoice
     }
 
 }

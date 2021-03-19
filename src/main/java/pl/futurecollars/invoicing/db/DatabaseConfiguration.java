@@ -28,6 +28,7 @@ import pl.futurecollars.invoicing.db.memory.InMemoryDatabase;
 import pl.futurecollars.invoicing.db.mongo.MongoBasedDatabase;
 import pl.futurecollars.invoicing.db.mongo.MongoIdProvider;
 import pl.futurecollars.invoicing.db.sql.SqlDatabase;
+import pl.futurecollars.invoicing.model.Company;
 import pl.futurecollars.invoicing.model.Invoice;
 import pl.futurecollars.invoicing.utils.FilesService;
 import pl.futurecollars.invoicing.utils.JsonService;
@@ -49,7 +50,7 @@ public class DatabaseConfiguration {
 
   @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "file")
-  public Database fileBasedDatabase(
+  public Database<Invoice> fileBasedDatabase(
       IdProvider idProvider,
       FilesService filesService,
       JsonService jsonService,
@@ -62,20 +63,26 @@ public class DatabaseConfiguration {
 
   @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "sql")
-  public Database sqlDatabase(JdbcTemplate jdbcTemplate) {
+  public Database<Invoice> sqlDatabase(JdbcTemplate jdbcTemplate) {
     return new SqlDatabase(jdbcTemplate);
   }
 
   @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "jpa")
-  public Database jpaDatabase(InvoiceRepository invoiceRepository) {
+  public Database<Invoice> jpaDatabase(InvoiceRepository invoiceRepository) {
     return new JpaDatabase(invoiceRepository);
   }
 
   @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "memory")
-  public Database inMemoryDatabase() {
-    return new InMemoryDatabase();
+  public Database<Invoice> invoiceInMemoryDatabase() {
+    return new InMemoryDatabase<>();
+  }
+
+  @Bean
+  //  @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "memory") // TODO [PK] enable
+  public Database<Company> companyInMemoryDatabase() {
+    return new InMemoryDatabase<>();
   }
 
   @Bean
@@ -106,7 +113,7 @@ public class DatabaseConfiguration {
 
   @Bean
   @ConditionalOnProperty(name = "invoicing-system.database", havingValue = "mongo")
-  public Database mongoDatabase(
+  public Database<Invoice> mongoDatabase(
       @Value("${invoicing-system.database.collection}") String collectionName,
       MongoDatabase mongoDb,
       MongoIdProvider mongoIdProvider
