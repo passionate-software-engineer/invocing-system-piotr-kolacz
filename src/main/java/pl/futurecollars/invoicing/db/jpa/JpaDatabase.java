@@ -33,21 +33,21 @@ public class JpaDatabase<T extends WithId> implements Database<T> {
 
   @Override
   public Optional<T> update(long id, T updatedItem) {
-    Optional<T> invoiceOptional = getById(id);
+    Optional<T> itemOptional = getById(id);
 
-    if (invoiceOptional.isPresent()) {
+    if (itemOptional.isPresent()) {
       repository.save(updatedItem);
     }
 
-    return invoiceOptional;
+    return itemOptional;
   }
 
   @Override
   public Optional<T> delete(long id) {
-    Optional<T> invoice = getById(id);
+    Optional<T> item = getById(id);
 
-    invoice.ifPresent(repository::delete);
+    item.ifPresent(repository::delete);
 
-    return invoice;
+    return item;
   }
 }
