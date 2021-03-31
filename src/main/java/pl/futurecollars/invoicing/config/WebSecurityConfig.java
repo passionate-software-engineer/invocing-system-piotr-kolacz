@@ -16,8 +16,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Autowired
   private CorsFilter corsFilter;
 
-  @Value("${invoicing-system.cors.disable:false}")
-  private boolean disableCors;
+  @Value("${invoicing-system.csrf.disable:false}")
+  private boolean disableCsrf;
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
@@ -25,7 +25,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .and()
         .addFilterBefore(corsFilter, ChannelProcessingFilter.class);
 
-    if (disableCors) {
+    if (disableCsrf) {
       http.csrf().disable();
     } else {
       http.csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
