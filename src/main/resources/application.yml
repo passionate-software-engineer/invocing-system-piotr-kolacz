@@ -20,3 +20,8 @@ spring:
     user:
       name: piotr
       password: abc123
+
+invoicing-system:
+  allowedOrigins: http://localhost:4200
+  cors:
+    disable: true
