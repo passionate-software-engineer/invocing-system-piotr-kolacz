@@ -13,6 +13,15 @@ logging:
 
 spring:
   profiles:
-    active: sql
+    active: file
   flyway:
     enabled: false
+  security:
+    user:
+      name: piotr
+      password: abc123
+
+invoicing-system:
+  allowedOrigins: http://localhost:4200
+  csrf:
+    disable: true
